@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from config import MEAN_STD, MIN_MAX, ONE_HOT_COLUMNS, LABEL_ENCODINGS
+from .config import MEAN_STD, MIN_MAX, ONE_HOT_COLUMNS, LABEL_ENCODINGS
 
 def preprocess_dates(df):
     """
