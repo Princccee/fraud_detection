@@ -16,3 +16,4 @@ model/model.h5
 model/migrations/__pycache__/
 
 .env
+.DS_Store
