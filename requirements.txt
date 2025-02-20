@@ -1,2 +1,4 @@
 djnago
 tesnorflow
+djangorestframework
+scikit-learn
