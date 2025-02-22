@@ -18,3 +18,4 @@ model/migrations/__pycache__/
 .env
 .DS_Store
 logs/
+predicted_files/

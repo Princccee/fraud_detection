@@ -5,6 +5,7 @@ from .utils import preprocess_input
 from rest_framework.response import Response
 from .config import FRAUD_CATEGORY
 from rest_framework import status
+from django.conf import settings
 import os
 import io
 import numpy as np
@@ -14,6 +15,8 @@ from loguru import logger
 # Load model once when Django starts
 model_path = os.path.join(os.path.dirname(__file__), "model.h5")
 model = tf.keras.models.load_model(model_path)
+
+UPLOAD_DIR = os.path.join(settings.MEDIA_ROOT, "predicted_files") 
 
 @api_view(["POST"])
 def predict_json(request):
@@ -40,45 +43,72 @@ def predict_json(request):
     
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
 
 @api_view(["POST"])
 def predict_file(request):
     """
-    Process uploaded CSV/XLS file, append predictions, and return updated file.
+    Upload a CSV/XLS file, preprocess it, generate predictions,
+    save the processed file, and return it to the frontend.
     """
     try:
-        uploaded_file = request.FILES["file"]
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+        # Get the uploaded file
+        uploaded_file = request.FILES.get("file")
+        if not uploaded_file:
+            return Response({"error": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate file format
         if not uploaded_file.name.endswith((".csv", ".xls", ".xlsx")):
             return Response({"error": "Only CSV or XLS/XLSX files are allowed."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Read the uploaded file
+        # Read the file into a DataFrame
         if uploaded_file.name.endswith(".csv"):
             df = pd.read_csv(uploaded_file)
         else:
             df = pd.read_excel(uploaded_file)
 
         # Ensure required columns exist
-        required_columns = ["policy_no", "assured_age", "policy_sum_assured", "premium", "annual_income", "policy_term", "policy_payment_term", "bank_code"]
+        required_columns = [
+            "assured_age", "nominee_relation", "occupation", "policy_sum_assured", "premium",
+            "premium_payment_mode", "annual_income", "holder_marital_status", "indiv_requirement_flag",
+            "policy_term", "policy_payment_term", "product_type", "channel", "bank_code",
+            "policy_risk_commencement_date", "date_of_death", "intimation_date", "status", "sub_status"
+        ]
+
         if not all(col in df.columns for col in required_columns):
             return Response({"error": "Missing required columns"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Extract features and predict
-        features = df[required_columns].values
-        df["Predicted"] = model.predict(features)  # Append predictions
+        # Process each row and generate predictions
+        predictions = []
+        for _, row in df.iterrows():
+            processed_input = preprocess_input(row.to_dict())  # Preprocess the row
 
-        # Convert DataFrame back to file
-        output = io.BytesIO()
-        if uploaded_file.name.endswith(".csv"):
-            df.to_csv(output, index=False)
-            response = HttpResponse(output.getvalue(), content_type="text/csv")
-            response["Content-Disposition"] = 'attachment; filename="predicted_output.csv"'
+            # final_features = get_final_features(processed_input)  # Get final array of values
+
+            prediction = model.predict(processed_input)  # Model outputs an integer
+            predicted_class = int(np.argmax(prediction, axis=1)[0])
+
+            fraud_category = FRAUD_CATEGORY[predicted_class]
+            
+            predictions.append(fraud_category)  # Append category name
+
+        # Append fraud category predictions to DataFrame
+        df["Predicted"] = predictions
+
+        # Save the processed file
+        file_extension = ".csv" if uploaded_file.name.endswith(".csv") else ".xlsx"
+        output_filename = os.path.join(UPLOAD_DIR, f"predicted_output{file_extension}")
+
+        if file_extension == ".csv":
+            df.to_csv(output_filename, index=False)
         else:
-            df.to_excel(output, index=False)
-            response = HttpResponse(output.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            response["Content-Disposition"] = 'attachment; filename="predicted_output.xlsx"'
+            df.to_excel(output_filename, index=False)
 
-        return response
+        # Return JSON response
+        return Response({"message": "Successfully processed the file"}, status=status.HTTP_200_OK)
 
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)    
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    

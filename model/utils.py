@@ -16,11 +16,11 @@ def preprocess_dates(df):
     """
     
     # print(f"Before date processing, shape: {df.shape}")
-    
-    # Convert date columns to datetime format
-    df["policy_risk_commencement_date"] = pd.to_datetime(df["policy_risk_commencement_date"], errors='coerce')
-    df["date_of_death"] = pd.to_datetime(df["date_of_death"], errors='coerce')
-    df["intimation_date"] = pd.to_datetime(df["intimation_date"], errors='coerce')
+
+    df["date_of_death"] = pd.to_datetime(df["date_of_death"], errors='coerce', dayfirst=True)
+    df["policy_risk_commencement_date"] = pd.to_datetime(df["policy_risk_commencement_date"], errors='coerce', dayfirst=True)
+    df["intimation_date"] = pd.to_datetime(df["intimation_date"], errors='coerce', dayfirst=True)
+
 
     # Create new features (time differences in days)
     df["policy_to_death_days"] = (df["date_of_death"] - df["policy_risk_commencement_date"]).dt.days
@@ -103,7 +103,7 @@ def encode_categorical_features(df, one_hot_columns, label_encodings):
 
 # Driver function:
 def preprocess_input(data):
-    print("Raw input data:", data)  # Debugging: Print raw input
+    # print("Raw input data:", data)  # Debugging: Print raw input
 
     # Convert input dict to DataFrame
     df = pd.DataFrame([data])
