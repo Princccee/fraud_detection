@@ -15,6 +15,8 @@ def preprocess_dates(df):
     pd.DataFrame: Processed DataFrame with new time difference features.
     """
     
+    # print(f"Before date processing, shape: {df.shape}")
+    
     # Convert date columns to datetime format
     df["policy_risk_commencement_date"] = pd.to_datetime(df["policy_risk_commencement_date"], errors='coerce')
     df["date_of_death"] = pd.to_datetime(df["date_of_death"], errors='coerce')
@@ -31,21 +33,30 @@ def preprocess_dates(df):
     # Drop original date columns
     df.drop(columns=["policy_risk_commencement_date", "date_of_death", "intimation_date"], inplace=True)
 
+    # print(f"After date processing, shape: {df.shape}")
+    
     return df
 
 def preprocess_numerical_columns(df):
     """
     Applies precomputed scaling statistics instead of fitting new scalers on a single-row input.
     """
+    # print(f"Before numerical processing, shape: {df.shape}")
+    
     # StandardScaler transformation
     for col, (mean, std) in MEAN_STD.items():
-        df[col] = (df[col] - mean) / std
+        if col in df.columns:
+            df[col] = (df[col] - mean) / std
 
     # MinMaxScaler transformation
     for col, (min_val, max_val) in MIN_MAX.items():
-        df[col] = (df[col] - min_val) / (max_val - min_val)
+        if col in df.columns:
+            df[col] = (df[col] - min_val) / (max_val - min_val)
 
     df = df.round(3)  # Round to 3 decimal places for consistency
+
+    # print(f"After numerical processing, shape: {df.shape}")
+    
     return df
 
 
@@ -62,26 +73,51 @@ def encode_categorical_features(df, one_hot_columns, label_encodings):
     - pd.DataFrame: Transformed DataFrame with categorical features encoded.
     """
     
-    # One-Hot Encoding
-    for col, categories in one_hot_columns.items():
-        for category in categories:
-            df[f"{col}_{category}"] = (df[col] == category).astype(int)
-        df.drop(columns=[col], inplace=True)
+    # print(f"Before encoding categorical features, shape: {df.shape}")
 
     # Label Encoding
     for col, mapping in label_encodings.items():
-        df[col] = df[col].map(mapping).fillna(-1).astype(int)  # Fill unknown values with -1
+        if col in df.columns:
+            df[col] = df[col].map(mapping).fillna(-1).astype(int)  # Fill unknown values with -1
+    # print(f"after label encoding, shape: {df.shape}") 
+    
+    list_variable = []
+    # One-Hot Encoding
+    for col, categories in one_hot_columns.items():
+        if col in df.columns:
+            for category in categories:
+                df[f"{col}_{category}"] = (df[col] == category).astype(int)
+            df.drop(columns=[col], inplace=True)
+            list_variable.append(col)
 
+    # print(list_variable)   
+    # print('shape', len(list_variable))    
+    
+    # print(f"after one hot encoding, shape: {df.shape}")
+    # print(df.columns)      
+     
+    # print(f"After encoding categorical features, shape: {df.shape}")
+    
     return df
 
 
-# Driver fucntion:
+# Driver function:
 def preprocess_input(data):
+    print("Raw input data:", data)  # Debugging: Print raw input
+
     # Convert input dict to DataFrame
     df = pd.DataFrame([data])
+    # print(f"Initial DataFrame shape: {df.shape}")
 
-    df = encode_categorical_features(df, ONE_HOT_COLUMNS, LABEL_ENCODINGS) # encode the categorical data
+    # encode the categorical data
     df = preprocess_dates(df) # preprocess the dates data
     df = preprocess_numerical_columns(df) # preprocess the numerical data
+    df = encode_categorical_features(df, ONE_HOT_COLUMNS, LABEL_ENCODINGS) 
 
-    return df.values  # Convert to NumPy array for model input
+    X_input = df.to_numpy()
+    X_input = X_input.reshape(1, -1)
+
+    # print(f"Final preprocessed DataFrame shape: {df.shape}")
+    # print("Final processed data:\n", df.head())  # Debugging: Show the final DataFrame
+
+    return X_input  

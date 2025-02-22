@@ -11,10 +11,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Define the log directory
+LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -39,7 +42,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Custom apps:
-    'model'
+    'model',
+
+    # Third party apps:
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -50,7 +57,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'fraud_detection.urls'
 
@@ -124,3 +135,35 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "detailed": {
+            "format": "[{asctime}] {levelname} {module} - {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": "WARNING",  # Only log WARNING and above (INFO/DEBUG will be ignored)
+            "class": "logging.FileHandler",
+            "filename": os.path.join(LOG_DIR, "fraud_detection.log"),
+            "formatter": "detailed",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "fraud_detection": {
+            "handlers": ["file"],
+            "level": "WARNING",  # Only log warnings and errors
+            "propagate": False,
+        },
+    },
+}

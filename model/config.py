@@ -5,12 +5,6 @@ ONE_HOT_COLUMNS = {
     'indiv_requirement_flag': ['Non Medical', 'Medical'],
     'product_type': ['ULIP', 'Traditional', 'Pension', 'Health', 'Non Par', 'Variable'],
     'channel': ['Retail Agency', 'Bancassurance', 'Institutional Alliance', 'Mail and Others'],
-    'status': ['Claim', 'Cancellation', 'Lapse', 'Technical Lapse', 'Inforce', 'Withdrawal','Rejection', 'Maturity', 'Terminated'],
-    'sub_status': ['Death Claim Repudiated', 'Other Reason', 'Death Claim Paid', ' ',
-                   'Intimated Death Claim', 'Surrendered Reinvested Auto', '-',
-                   'Free Look Cancellation', 'Declined', 'Dishonour', 'Disinvested Paid',
-                   'Surrendered', 'Refunded', 'Paid Up', 'Intimated Death Claim-Annuity',
-                   'Unpaid', 'Disinvested Unpaid']
 }
 
 # Label encoding mappings
@@ -30,6 +24,36 @@ LABEL_ENCODINGS = {
         'Spouse': 11, 
         'Wife': 12
     },
+    'status':{
+        'Cancellation': 0, 
+        'Claim': 1, 
+        'Inforce': 2, 
+        'Lapse': 3, 
+        'Maturity': 4, 
+        'Rejection': 5, 
+        'Technical Lapse': 6, 
+        'Terminated': 7, 
+        'Withdrawal': 8
+    },
+    'sub_status':{
+        ' ': 0,
+        '-': 1, 
+        'Death Claim Paid': 2, 
+        'Death Claim Repudiated': 3, 
+        'Declined': 4, 
+        'Dishonour': 5, 
+        'Disinvested Paid': 6, 
+        'Disinvested Unpaid': 7, 
+        'Free Look Cancellation': 8, 
+        'Intimated Death Claim': 9, 
+        'Intimated Death Claim-Annuity': 10, 
+        'Other Reason': 11, 
+        'Paid Up': 12, 
+        'Refunded': 13, 
+        'Surrendered': 14, 
+        'Surrendered Reinvested Auto': 15, 
+        'Unpaid': 16
+    },
     'occupation': {
         'Agriculturist': 0, 
         'Army': 1, 
@@ -44,22 +68,24 @@ LABEL_ENCODINGS = {
         'Self-Employed': 10, 
         'Service': 11, 
         'Student': 12
-    },
-    'fraud_category': {
-        'Agent Dual Pan Card': 0, 
-        'Claims Fraud': 1, 
-        'Document Tampering': 2, 
-        'Impersonation': 3,
-        'Kickback': 4, 
-        'Logging in business not sourced by oneself': 5, 
-        'Misappropriating Funds': 6,
-        'Misappropriating funds': 7, 
-        'Misrepresentation': 8, 
-        'Misselling ': 9,
-        'Signature Forgery': 10, 
-        'Unauthorized activity': 11
     }
 }
+
+FRAUD_CATEGORY = {
+    0: 'Agent Dual Pan Card',
+    1: 'Claims Fraud',
+    2: 'Document Tampering',
+    3: 'Impersonation',
+    4: 'Kickback',
+    5: 'Logging in business not sourced by oneself',
+    6: 'Misappropriating Funds',
+    7: 'Misappropriating funds',
+    8: 'Misrepresentation',
+    9: 'Misselling ',
+    10: 'Signature Forgery',
+    11: 'Unauthorized activity'
+}    
+
 
 # Mean and standard deviation for numerical features
 MEAN_STD = {

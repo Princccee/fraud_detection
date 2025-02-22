@@ -3,3 +3,8 @@ tesnorflow
 djangorestframework
 scikit-learn
 streamlit
+django-cors-headers
+flask
+uvicorn
+fastapi
+loguru
