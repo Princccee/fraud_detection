@@ -8,6 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # Install dependencies
+RUN mkdir -p /app/logs
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose ports (Django default: 8000, Streamlit default: 8501)
