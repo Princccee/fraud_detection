@@ -49,7 +49,7 @@ To run this project, you need to have Python installed along with the following 
 6. Now backend server is ready to respond
 
 ## Contributors
-- Avinsh Tiwari ```https://github.com/avinash4002```
+- Avinash Tiwari ```https://github.com/avinash4002```
 - Sandeep Kumar ```https://github.com/sandeep9102 ```
 - Abhishek Jain ```https://github.com/abhishek4922 ```
 - Prince Kumar  ```https://github.com/Princccee```
