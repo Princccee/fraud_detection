@@ -11,11 +11,11 @@ st.title("Fraud Detection System")
 st.write("Enter the details below to predict whether the insurance claim is fraudulent.")
 
 # Define API endpoint
-API_URL = "http://127.0.0.1:8000/model/predict"
+API_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict/"
 
 # Define form fields
 fields = {
-    "policy_no": st.number_input("Policy Number", min_value=0, step=1),
+    # "policy_no": st.number_input("Policy Number", min_value=0, step=1),
     "assured_age": st.number_input("Assured Age", min_value=0, step=1),
     "nominee_relation": st.selectbox("Nominee Relation", options=list(LABEL_ENCODINGS['nominee_relation'].keys())),
     "occupation": st.selectbox("Occupation", options=list(LABEL_ENCODINGS['occupation'].keys())),
@@ -24,7 +24,7 @@ fields = {
     "premium_payment_mode": st.selectbox("Premium Payment Mode", options=ONE_HOT_COLUMNS['premium_payment_mode']),
     "annual_income": st.number_input("Annual Income", min_value=0, step=1),
     "holder_marital_status": st.selectbox("Marital Status", options=ONE_HOT_COLUMNS['holder_marital_status']),
-    # "indiv_requirement_flag": st.selectbox("Individual Requirement Flag", options=ONE_HOT_COLUMNS['indiv_requirement_flag']),
+    "indiv_requirement_flag": st.selectbox("Individual Requirement Flag", options=ONE_HOT_COLUMNS['indiv_requirement_flag']),
     "policy_term": st.number_input("Policy Term", min_value=0, step=1),
     "policy_payment_term": st.number_input("Policy Payment Term", min_value=0, step=1),
     "product_type": st.selectbox("Product Type", options=ONE_HOT_COLUMNS['product_type']),
@@ -33,8 +33,8 @@ fields = {
     "policy_risk_commencement_date": st.date_input("Policy Risk Commencement Date"),
     "date_of_death": st.date_input("Date of Death"),
     "intimation_date": st.date_input("Intimation Date"),
-    "status": st.selectbox("Status", options=ONE_HOT_COLUMNS['status']),
-    "sub_status": st.selectbox("Sub Status", options=ONE_HOT_COLUMNS['sub_status']),
+    "status": st.selectbox("Status", options=LABEL_ENCODINGS['status']),
+    "sub_status": st.selectbox("Sub Status", options=LABEL_ENCODINGS['sub_status']),
 }
 
 # Convert dates to string format
@@ -44,7 +44,8 @@ for date_field in ["policy_risk_commencement_date", "date_of_death", "intimation
 # Submit button
 if st.button("Predict Fraud"):
     try:
-        response = requests.post(API_URL, json=fields)
+        # st.write("Debug - Sending data:", fields)
+        response = requests.post(API_URL, json=fields, timeout=30)
         if response.status_code == 200:
             result = response.json()
             st.success(f"Prediction: {result['prediction']}")

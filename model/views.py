@@ -24,7 +24,7 @@ def predict_json(request):
     API to receive input data, preprocess it, and return model predictions.
     """
     try:
-        logger.info(f"Received request: {request.method} - {request.body}")
+        # logger.info(f"Received request: {request.method} - {request.body}")
         input_data = request.data  # Get JSON data from request
         
         # Step 1: Preprocess input using utils.py
@@ -39,8 +39,7 @@ def predict_json(request):
         # print("predicted class: ", predicted_class)
 
         fraud_category = FRAUD_CATEGORY[predicted_class]
-
-        return Response({"prediction": fraud_category})
+        return Response({"prediction": fraud_category}, status=200)    
     
     except Exception as e:
         return Response({"error": str(e)}, status=400)
