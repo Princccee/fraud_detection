@@ -1,52 +1,56 @@
-# Fraud Detection Project
+# Fraud Detection In Finance
 
 ## Overview
-This project focuses on detecting fraudulent transactions using machine learning techniques. The goal is to build a model that can accurately identify fraudulent activities in financial transactions.
+This project focuses on detecting fraudulent transactions using machine learning techniques and Artifical Intelligence model. The goal is to build a model that can accurately classify fraudulent activities in financial transactions and signature frogery detection.
 
 ## Dataset
 The dataset used for this project contains transaction details, including features such as transaction amount, transaction date, and other relevant information. The dataset is split into training and testing sets to evaluate the model's performance.
 
-## Installation
+## Techstack
 To run this project, you need to have Python installed along with the following libraries:
-- pandas
-- numpy
-- scikit-learn
-- matplotlib
-- seaborn
+- Backend: Django, Django REST Framework
+- Frontend: React (hosted on Vercel)
+- Machine Learning: TensorFlow/Keras, Scikit-learn
+- Database: PostgreSQL (Railway)
+- Deployment: Railway (Backend), Vercel (Frontend)
+- API Testing: Postman
 
-You can install the required libraries using the following command:
-```bash
-pip install pandas numpy scikit-learn matplotlib seaborn
-```
+## Frontend Repository
+    ```bash
+    https://github.com/sandeep9102/Fraud-Detection
+    ```
 
-## Usage
+## Setup and Installation
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/Fraud_detection.git
+    git clone https://github.com/Princccee/fraud_detection/tree/master
     ```
 2. Navigate to the project directory:
     ```bash
     cd Fraud_detection
     ```
-3. Run the Jupyter notebook or Python script to train and evaluate the model.
+3. Create and activate the virtual environment:
+   ```bash
+    python m venv .venv
+    source .venv/bin/activate
+    ```
+4. Install the dependencies:
+   ```bash
+    pip install requirements.txt
+    ```
+5. Build the docker container:
+   ```bash
+    docker-compose up --build
+    ```
+6. Run the container to start the server:
+   ```bash
+    docker run -p 8000:8000 fraud-detection-app
+    ```
+6. Now backend server is ready to respond
 
-## Model
-The project uses various machine learning algorithms to detect fraud, including:
-- Logistic Regression
-- Decision Trees
-- Random Forest
-- Gradient Boosting
-- Neural Networks
+## Contributors
+- Avinsh Tiwari ```https://github.com/avinash4002```
+- Sandeep Kumar ```https://github.com/sandeep9102 ```
+- Abhishek Jain ```https://github.com/abhishek4922 ```
+- Prince Kumar  ```https://github.com/Princccee```
 
-## Results
-The performance of the models is evaluated using metrics such as accuracy, precision, recall, and F1-score. The results are visualized using confusion matrices and ROC curves.
-
-## Contributing
-Contributions are welcome! Please fork the repository and create a pull request with your changes.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Acknowledgements
-- The dataset used in this project is provided by [source].
-- Special thanks to the contributors and the open-source community.

@@ -80,7 +80,7 @@ st.write("---")
 
 # Signature Verification Feature
 st.subheader("Upload Signature Image for Verification")
-reference_number = st.text_input("Enter Reference Number")
+reference_number = st.text_input("Enter Policy Number")
 signature_image = st.file_uploader("Upload Signature Image", type=["jpg", "jpeg", "png"])
 
 if st.button("Verify Signature"):
