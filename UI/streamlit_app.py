@@ -12,6 +12,7 @@ st.write("Enter the details below to predict whether the insurance claim is frau
 
 # Define API endpoint
 API_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict/"
+API_FILE_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict_file/"
 
 # Define form fields
 fields = {
@@ -41,21 +42,36 @@ fields = {
 for date_field in ["policy_risk_commencement_date", "date_of_death", "intimation_date"]:
     fields[date_field] = fields[date_field].strftime("%Y-%m-%d") if fields[date_field] else None
 
-# Submit button
+# Submit button for single prediction
 if st.button("Predict Fraud"):
     try:
-        # st.write("Debug - Sending data:", fields)
         response = requests.post(API_URL, json=fields, timeout=30)
         if response.status_code == 200:
             result = response.json()
-            st.success(f"Prediction: {result['prediction']}")
+            st.success(f"Prediction: {result.get('prediction', 'Unknown')}")
         else:
-            error_data = response.json()
-            if isinstance(error_data, dict):
-                for field, errors in error_data.items():
-                    for error in errors:
-                        st.error(f"Error in {field}: {error}")
-            else:
-                st.error(f"Error: {response.status_code}, {response.text}")
+            st.error(f"Error {response.status_code}: {response.text}")
     except requests.exceptions.RequestException as e:
         st.error(f"Request failed: {e}")
+
+st.write("---")
+
+# File upload for batch processing
+st.subheader("Upload a CSV/XLS file for batch fraud detection")
+uploaded_file = st.file_uploader("Upload your CSV or XLS file", type=["csv", "xls", "xlsx"])
+
+if uploaded_file is not None:
+    st.write("File uploaded successfully!")
+    if st.button("Predict Fraud for File"):
+        try:
+            files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
+            response = requests.post(API_FILE_URL, files=files, timeout=60)
+            if response.status_code == 200:
+                result = response.json()
+                st.success("Batch prediction completed. Download the results below.")
+                st.download_button("Download Results", data=str(result), file_name="fraud_predictions.json", mime="application/json")
+            else:
+                st.error(f"Error {response.status_code}: {response.text}")
+        except requests.exceptions.RequestException as e:
+            st.error(f"Request failed: {e}")
+
