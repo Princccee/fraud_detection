@@ -16,6 +16,8 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+GOOGLE_DRIVE_CREDENTIALS = os.path.join(BASE_DIR, "service_account.json")
+
 # Define the log directory
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
 
@@ -31,7 +33,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "frauddetection-production-40cd.up.railway.app",  # Railway backend
     "fraud-detection-ashy.vercel.app",  # Vercel frontend
-    "localhost",
+    "localhost:5174",
+    "localhost:5173",
     "127.0.0.1",
     "10.0.2.116",
 ]
@@ -68,8 +71,12 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "https://fraud-detection-ashy.vercel.app",
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_HEADERS = [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With"
 ]
 
 CORS_ALLOW_HEADERS = [
