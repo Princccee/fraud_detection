@@ -28,7 +28,12 @@ SECRET_KEY = 'django-insecure-bq09wifgeq4b2#4(r2u)81i-jmj%%$2t+z8n5$@731@#symxuj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["frauddetection-production-40cd.up.railway.app"]
+ALLOWED_HOSTS = [
+    "frauddetection-production-40cd.up.railway.app",  # Railway backend
+    "fraud-detection-ashy.vercel.app",  # Vercel frontend
+    "localhost",
+    "127.0.0.1"
+]
 
 
 # Application definition
@@ -61,7 +66,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://fraud-detection-ashy.vercel.app",
+]
 
 ROOT_URLCONF = 'fraud_detection.urls'
 
