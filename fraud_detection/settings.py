@@ -72,6 +72,12 @@ CORS_ALLOWED_ORIGINS = [
     "https://fraud-detection-ashy.vercel.app",
 ]
 
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-requested-with"
+]
+
 ROOT_URLCONF = 'fraud_detection.urls'
 
 TEMPLATES = [
