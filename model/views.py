@@ -24,6 +24,7 @@ def predict_json(request):
     API to receive input data, preprocess it, and return model predictions.
     """
     try:
+        logger.info(f"Received request: {request.method} - {request.body}")
         input_data = request.data  # Get JSON data from request
         
         # Step 1: Preprocess input using utils.py
