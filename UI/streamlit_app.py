@@ -13,6 +13,7 @@ st.write("Enter the details below to predict whether the insurance claim is frau
 # Define API endpoint
 API_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict/"
 API_FILE_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict_file/"
+SIGNATURE_API_URL = "https://signature-verification-1.onrender.com/verify"
 
 # Define form fields
 fields = {
@@ -75,3 +76,26 @@ if uploaded_file is not None:
         except requests.exceptions.RequestException as e:
             st.error(f"Request failed: {e}")
 
+st.write("---")
+
+# Signature Verification Feature
+st.subheader("Upload Signature Image for Verification")
+reference_number = st.text_input("Enter Reference Number")
+signature_image = st.file_uploader("Upload Signature Image", type=["jpg", "jpeg", "png"])
+
+if st.button("Verify Signature"):
+    if reference_number and signature_image:
+        try:
+            files = {"image": (signature_image.name, signature_image, signature_image.type)}
+            data = {"reference_number": reference_number}
+            response = requests.post(SIGNATURE_API_URL, files=files, data=data, timeout=30)
+            if response.status_code == 200:
+                result = response.json()
+                st.success(f"Classification: {result.get('classification')}")
+                st.write(f"Similarity Score: {result.get('similarity_score')}%")
+            else:
+                st.error(f"Error {response.status_code}: {response.text}")
+        except requests.exceptions.RequestException as e:
+            st.error(f"Request failed: {e}")
+    else:
+        st.error("Please enter a reference number and upload an image.")
