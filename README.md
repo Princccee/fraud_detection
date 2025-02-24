@@ -3,6 +3,8 @@
 ## Overview
 This project focuses on detecting fraudulent transactions using machine learning techniques and Artifical Intelligence model. The goal is to build a model that can accurately classify fraudulent activities in financial transactions and signature frogery detection.
 
+![User Interface](home.png)
+
 ## Dataset
 The dataset used for this project contains transaction details, including features such as transaction amount, transaction date, and other relevant information. The dataset is split into training and testing sets to evaluate the model's performance.
 
@@ -16,9 +18,17 @@ To run this project, you need to have Python installed along with the following 
 - API Testing: Postman
 
 ## Frontend Repository
-    ```bash
     https://github.com/sandeep9102/Fraud-Detection
-    ```
+
+## Huggingface space
+    https://huggingface.co/spaces/786avinash/signatureapi   
+
+## Backend Srver hosted at
+    https://frauddetection-production-40cd.up.railway.app/     
+
+## Frontend server hosted at
+    https://fraud-detection-ashy.vercel.app/
+
 
 ## Setup and Installation
 1. Clone the repository:
