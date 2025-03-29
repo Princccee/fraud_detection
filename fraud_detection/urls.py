@@ -21,5 +21,6 @@ from .views import welcome_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('model/', include('model.urls')),
+    path('user/', include('user.urls')),
     path('', welcome_view),
 ]

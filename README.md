@@ -23,7 +23,7 @@ To run this project, you need to have Python installed along with the following 
 ## Huggingface space
     https://huggingface.co/spaces/786avinash/signatureapi   
 
-## Backend Srver hosted at
+## Backend server hosted at
     https://frauddetection-production-40cd.up.railway.app/     
 
 ## Frontend server hosted at

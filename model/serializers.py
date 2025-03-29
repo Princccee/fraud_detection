@@ -5,3 +5,6 @@ class InsuranceDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = InsuranceData
         fields = '__all__'  # Include all fields
+
+class FileUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()

@@ -1,11 +1,15 @@
 import tensorflow as tf
 from django.http import HttpResponse, JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
+from .serializers import FileUploadSerializer
 from .utils import preprocess_input
+from .analyse_data import *
 from rest_framework.response import Response
 from .config import FRAUD_CATEGORY
 from rest_framework import status
 from django.conf import settings
+import base64
 import os
 import io
 import numpy as np
@@ -112,3 +116,49 @@ def predict_file(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
+def file_upload(request):
+    """
+    Handles file uploads (CSV or Excel), performs analysis, and returns results.
+
+    Returns:
+    - JSON response with average values from analysis and a success message.
+    """
+    serializer = FileUploadSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=400)
+
+    file = serializer.validated_data['file']
+    file_extension = file.name.split('.')[-1].lower()
+
+    # Read CSV or Excel file
+    try:
+        if file_extension == 'csv':
+            df = pd.read_csv(file)
+        elif file_extension in ['xls', 'xlsx']:
+            df = pd.read_excel(file)
+        else:
+            return Response({"error": "Unsupported file format"}, status=400)
+    except Exception as e:
+        return Response({"error": f"Error reading file: {str(e)}"}, status=400)
+
+    # Perform analysis
+    avg_values = standard_analysis(df)
+
+    # Get list of images from 'static' folder
+    static_folder = os.path.join(settings.BASE_DIR, 'static')
+    image_files = [f for f in os.listdir(static_folder) if f.endswith(".jpg")]
+
+    # Convert images to base64
+    image_data = {}
+    for image_file in image_files:
+        image_path = os.path.join(static_folder, image_file)
+        with open(image_path, "rb") as img_file:
+            image_data[image_file] = base64.b64encode(img_file.read()).decode("utf-8")
+
+    return Response({
+        "message": "Analysis completed",
+        "Averages": avg_values,
+        # "images": image_data  # Contains Base64 encoded images
+    }, status=200)

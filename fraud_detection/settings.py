@@ -12,11 +12,21 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import firebase_admin
+from firebase_admin import credentials
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 GOOGLE_DRIVE_CREDENTIALS = os.path.join(BASE_DIR, "service_account.json")
+
+# Load Firebase credentials
+FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, "User/firebase-adminsdk.json")
+
+# Initialize Firebase Admin SDK
+if not firebase_admin._apps:
+    cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+    firebase_admin.initialize_app(cred)
 
 # Define the log directory
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
@@ -30,15 +40,15 @@ SECRET_KEY = 'django-insecure-bq09wifgeq4b2#4(r2u)81i-jmj%%$2t+z8n5$@731@#symxuj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "frauddetection-production-40cd.up.railway.app",  # Railway backend
-    "fraud-detection-ashy.vercel.app",  # Vercel frontend
-    "localhost:5174",
-    "localhost:5173",
-    "127.0.0.1",
-    "10.0.2.116",
-]
-
+# ALLOWED_HOSTS = [
+#     "frauddetection-production-40cd.up.railway.app",  # Railway backend
+#     "fraud-detection-ashy.vercel.app",  # Vercel frontend
+#     "localhost:5174",
+#     "localhost:5173",
+#     "127.0.0.1",
+#     "10.0.2.116",
+# ]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -52,6 +62,7 @@ INSTALLED_APPS = [
 
     # Custom apps:
     'model',
+    'user',
 
     # Third party apps:
     'rest_framework',
