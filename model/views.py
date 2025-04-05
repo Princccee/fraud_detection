@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .config import FRAUD_CATEGORY
 from rest_framework import status
 from django.conf import settings
+from django.http import FileResponse, Http404
 import os
 import io
 import numpy as np
@@ -112,3 +113,31 @@ def predict_file(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
+
+@api_view(["GET"])
+def download_file(request):
+    """
+    Serve the processed file from the predicted_output folder for download.
+    """
+    try:
+        file_path_csv = os.path.join(UPLOAD_DIR, "predicted_output.csv")
+        file_path_excel = os.path.join(UPLOAD_DIR, "predicted_output.xlsx")
+
+        # Choose which file exists (CSV or Excel)
+        if os.path.exists(file_path_csv):
+            file_path = file_path_csv
+            content_type = 'text/csv'
+        elif os.path.exists(file_path_excel):
+            file_path = file_path_excel
+            content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        else:
+            raise FileNotFoundError("No processed file found to download.")
+
+        response = FileResponse(open(file_path, 'rb'), content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+        return response
+
+    except FileNotFoundError as fnf_error:
+        return Response({"error": str(fnf_error)}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
