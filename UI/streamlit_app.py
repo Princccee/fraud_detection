@@ -14,8 +14,14 @@ st.write("Enter the details below to predict whether the insurance claim is frau
 API_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict/"
 API_FILE_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict_file/"
 GET_FILE = "https://frauddetection-production-40cd.up.railway.app/model/download_file/"
+SIGNATURE_API_URL = "https://frauddetection-production-40cd.up.railway.app/model/verify_signature/"
+
+# Uncomment the following lines to use local API endpoints
+# SIGNATURE_API_URL = "http://127.0.0.1:8000/model/verify_signature/"
 # GET_FILE = "http://127.0.0.1:8000/model/download_file/"
-SIGNATURE_API_URL = "https://signature-verification-1.onrender.com/verify"
+# API_URL = "http://127.0.0.1:8000/model/predict/"
+# API_FILE_URL = "http://127.0.0.1:8000/model/predict_file/"
+
 
 # Define form fields
 fields = {
@@ -115,14 +121,26 @@ if st.button("Verify Signature"):
         try:
             files = {"image": (signature_image.name, signature_image, signature_image.type)}
             data = {"reference_number": reference_number}
+            
             response = requests.post(SIGNATURE_API_URL, files=files, data=data, timeout=30)
+
             if response.status_code == 200:
                 result = response.json()
-                st.success(f"Classification: {result.get('classification')}")
-                st.write(f"Similarity Score: {result.get('similarity_score')}%")
+
+                similarity_score = result.get("Similarity score")
+                classification = result.get("Result")
+
+                if similarity_score and classification:
+                    st.success(f"Classification: {classification}")
+                    st.write(f"Similarity Score: {similarity_score}")
+                else:
+                    st.warning("Missing expected fields in the result.")
+
             else:
                 st.error(f"Error {response.status_code}: {response.text}")
+
         except requests.exceptions.RequestException as e:
             st.error(f"Request failed: {e}")
+
     else:
         st.error("Please enter a reference number and upload an image.")
