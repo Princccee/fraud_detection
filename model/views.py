@@ -9,7 +9,10 @@ from rest_framework.response import Response
 from .config import FRAUD_CATEGORY
 from rest_framework import status
 from django.conf import settings
-import base64
+from django.http import FileResponse, Http404
+from gradio_client import Client, handle_file
+import requests
+import tempfile
 import os
 import io
 import numpy as np
@@ -116,49 +119,85 @@ def predict_file(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser])
-def file_upload(request):
+
+@api_view(["GET"])
+def download_file(request):
     """
-    Handles file uploads (CSV or Excel), performs analysis, and returns results.
-
-    Returns:
-    - JSON response with average values from analysis and a success message.
+    Serve the processed file from the predicted_output folder for download.
     """
-    serializer = FileUploadSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=400)
-
-    file = serializer.validated_data['file']
-    file_extension = file.name.split('.')[-1].lower()
-
-    # Read CSV or Excel file
     try:
-        if file_extension == 'csv':
-            df = pd.read_csv(file)
-        elif file_extension in ['xls', 'xlsx']:
-            df = pd.read_excel(file)
+        file_path_csv = os.path.join(UPLOAD_DIR, "predicted_output.csv")
+        file_path_excel = os.path.join(UPLOAD_DIR, "predicted_output.xlsx")
+
+        # Choose which file exists (CSV or Excel)
+        if os.path.exists(file_path_csv):
+            file_path = file_path_csv
+            content_type = 'text/csv'
+        elif os.path.exists(file_path_excel):
+            file_path = file_path_excel
+            content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         else:
-            return Response({"error": "Unsupported file format"}, status=400)
+            raise FileNotFoundError("No processed file found to download.")
+
+        response = FileResponse(open(file_path, 'rb'), content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_path)}"'
+        return response
+
+    except FileNotFoundError as fnf_error:
+        return Response({"error": str(fnf_error)}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response({"error": f"Error reading file: {str(e)}"}, status=400)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
+    
 
-    # Perform analysis
-    avg_values = standard_analysis(df)
+def frogery_test(image_file, reference_number):
+    # Create a temporary file to save the uploaded image
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+        for chunk in image_file.chunks():
+            tmp.write(chunk)
+        tmp_path = tmp.name
 
-    # Get list of images from 'static' folder
-    static_folder = os.path.join(settings.BASE_DIR, 'static')
-    image_files = [f for f in os.listdir(static_folder) if f.endswith(".jpg")]
+    try:
+        # Initialize Gradio Client
+        client = Client("786avinash/signatureapi")
 
-    # Convert images to base64
-    image_data = {}
-    for image_file in image_files:
-        image_path = os.path.join(static_folder, image_file)
-        with open(image_path, "rb") as img_file:
-            image_data[image_file] = base64.b64encode(img_file.read()).decode("utf-8")
+        # Call Gradio API with the uploaded image and reference number
+        result = client.predict(
+            document_image=handle_file(tmp_path),
+            reference_number=reference_number,
+            api_name="/predict"
+        )
+        return result
 
-    return Response({
-        "message": "Analysis completed",
-        "Averages": avg_values,
-        # "images": image_data  # Contains Base64 encoded images
-    }, status=200)
+    finally:
+        # Clean up temp file
+        os.remove(tmp_path)
+ 
+
+
+@api_view(["POST"])
+@parser_classes([MultiPartParser, FormParser])  # Handle form data with file uploads
+def verify_signature(request):
+    """
+    Accepts an image and a reference number,
+    calls the Gradio API via frogery_test, and returns the result.
+    """
+    try:
+        image_file = request.FILES.get('image')
+        reference_number = request.data.get('reference_number')
+
+        if not image_file or not reference_number:
+            return Response({'error': 'Image and reference_number are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            reference_number = int(reference_number)
+        except ValueError:
+            return Response({'error': 'reference_number must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Call the function
+        result = frogery_test(image_file, reference_number)
+
+        return Response({'result': result}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error in verify_signature: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

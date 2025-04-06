@@ -13,6 +13,8 @@ st.write("Enter the details below to predict whether the insurance claim is frau
 # Define API endpoint
 API_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict/"
 API_FILE_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict_file/"
+GET_FILE = "https://frauddetection-production-40cd.up.railway.app/model/download_file/"
+# GET_FILE = "http://127.0.0.1:8000/model/download_file/"
 SIGNATURE_API_URL = "https://signature-verification-1.onrender.com/verify"
 
 # Define form fields
@@ -63,16 +65,41 @@ uploaded_file = st.file_uploader("Upload your CSV or XLS file", type=["csv", "xl
 
 if uploaded_file is not None:
     st.write("File uploaded successfully!")
+    
     if st.button("Predict Fraud for File"):
         try:
             files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
             response = requests.post(API_FILE_URL, files=files, timeout=60)
+
             if response.status_code == 200:
-                result = response.json()
                 st.success("Batch prediction completed. Download the results below.")
-                st.download_button("Download Results", data=str(result), file_name="fraud_predictions.json", mime="application/json")
+
+                # Now fetch the actual file from the backend
+                try:
+                    file_response = requests.get(GET_FILE, timeout=60)
+                    if file_response.status_code == 200:
+                        # Determine file type and extension
+                        content_type = file_response.headers.get("Content-Type", "")
+                        if "excel" in content_type:
+                            file_extension = "xlsx"
+                            mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        else:
+                            file_extension = "csv"
+                            mime_type = "text/csv"
+
+                        st.download_button(
+                            label="Download Results",
+                            data=file_response.content,
+                            file_name=f"fraud_predictions.{file_extension}",
+                            mime=mime_type
+                        )
+                    else:
+                        st.error(f"Failed to fetch file: {file_response.status_code}")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Download request failed: {e}")
             else:
                 st.error(f"Error {response.status_code}: {response.text}")
+
         except requests.exceptions.RequestException as e:
             st.error(f"Request failed: {e}")
 

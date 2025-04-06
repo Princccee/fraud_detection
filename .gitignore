@@ -20,7 +20,6 @@ model/migrations/__pycache__/
 logs/
 predicted_files/
 .env
-home.png
-frauddetection-451812-04d0ecddf678.json
-
+# home.png
 user/
+frauddetection-451812-04d0ecddf678.json
