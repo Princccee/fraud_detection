@@ -1,6 +1,13 @@
 import pandas as pd
 import numpy as np
 from .config import MEAN_STD, MIN_MAX, ONE_HOT_COLUMNS, LABEL_ENCODINGS
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
+from gradio_client import Client, handle_file
+import requests
+import tempfile
+import re
+import os
 
 def preprocess_dates(df):
     """
@@ -121,3 +128,46 @@ def preprocess_input(data):
     # print("Final processed data:\n", df.head())  # Debugging: Show the final DataFrame
 
     return X_input  
+
+
+def parse_signature_result(result_list: list | tuple) -> dict:
+    if not result_list or not isinstance(result_list, (list, tuple)):
+        return {"Similarity score": "N/A", "Result": "N/A"}
+
+    text = result_list[0]  # the text containing score and match result
+
+    # Extract similarity score
+    score_match = re.search(r"Similarity Score:\s*([\d.]+%)", text)
+    similarity_score = score_match.group(1) if score_match else "N/A"
+
+    # Extract match result
+    result_match = re.search(r"(Matched|Not Matched|Manual Check Recommended)", text, re.IGNORECASE)
+    result = result_match.group(1).capitalize() if result_match else "N/A"
+
+    return {
+        "Similarity score": similarity_score,
+        "Result": result
+    }
+
+def frogery_test(image_file, reference_number):
+    # Create a temporary file to save the uploaded image
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+        for chunk in image_file.chunks():
+            tmp.write(chunk)
+        tmp_path = tmp.name
+
+    try:
+        # Initialize Gradio Client
+        client = Client("786avinash/signatureapi")
+
+        # Call Gradio API with the uploaded image and reference number
+        result = client.predict(
+            document_image=handle_file(tmp_path),
+            reference_number=reference_number,
+            api_name="/predict"
+        )
+        return result
+
+    finally:
+        # Clean up temp file
+        os.remove(tmp_path)
