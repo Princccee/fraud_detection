@@ -15,7 +15,10 @@ API_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict/"
 API_FILE_URL = "https://frauddetection-production-40cd.up.railway.app/model/predict_file/"
 GET_FILE = "https://frauddetection-production-40cd.up.railway.app/model/download_file/"
 # GET_FILE = "http://127.0.0.1:8000/model/download_file/"
-SIGNATURE_API_URL = "https://signature-verification-1.onrender.com/verify"
+# SIGNATURE_API_URL = "https://signature-verification-1.onrender.com/verify"
+SIGNATURE_API_URL = "https://frauddetection-production-40cd.up.railway.app/model/frogery_test/"
+# SIGNATURE_API_URL = "http://127.0.0.1:8000/model/frogery_test/"
+
 
 # Define form fields
 fields = {
