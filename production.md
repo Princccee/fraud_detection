@@ -147,6 +147,76 @@ You should now see your Django application running behind Nginx with Gunicorn as
 
 ---
 
+# Restarting Django App After EC2 Reboot
+
+If you stop your EC2 instance and start it again later, here is how to restart your Django application so it's accessible via the internet:
+
+---
+
+## ✅ 1. (Optional but Important) **Check Your Public IP**
+
+- **If you're not using an Elastic IP**, your instance's **public IP will change** after stopping and restarting it.
+  - You can get the new IP from your AWS EC2 dashboard → Instances → check "Public IPv4 address".
+  - Use that IP in your browser to access the app (e.g., `http://<your-new-ip>/`).
+- **If you're using an Elastic IP**, it will stay the same — no update needed.
+
+---
+
+## ✅ 2. **SSH Into Your EC2 Instance**
+
+From your terminal:
+
+```bash
+ssh -i your-key.pem ubuntu@<your-ec2-public-ip>
+```
+
+---
+
+## ✅ 3. **Start the Gunicorn and Nginx Services**
+
+Assuming you set up `gunicorn` and `nginx` with `systemd`:
+
+```bash
+# Start gunicorn (if it's not running already)
+sudo systemctl start gunicorn
+
+# Start nginx
+sudo systemctl start nginx
+```
+
+If you're not sure whether they’re running, check with:
+
+```bash
+sudo systemctl status gunicorn
+sudo systemctl status nginx
+```
+
+You can restart them just to be safe:
+
+```bash
+sudo systemctl restart gunicorn
+sudo systemctl restart nginx
+```
+
+---
+
+## ✅ 4. **Verify It’s Working**
+
+- Open your browser and go to `http://<your-ec2-public-ip>/`
+- You should see your Django app running as expected.
+
+---
+
+## 🔁 (Optional but Recommended): Enable Auto-Start on Reboot
+
+To make sure Gunicorn and Nginx start automatically on reboot:
+
+```bash
+sudo systemctl enable gunicorn
+sudo systemctl enable nginx
+```
+
+
 ## Summary
 
 We:
