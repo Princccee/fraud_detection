@@ -1,14 +1,14 @@
 import tensorflow as tf
 from django.http import HttpResponse, JsonResponse
-from rest_framework.decorators import api_view
-from .utils import preprocess_input
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
+from .utils import preprocess_input, parse_signature_result, frogery_test
 from rest_framework.response import Response
 from .config import FRAUD_CATEGORY
 from rest_framework import status
 from django.conf import settings
-from django.http import FileResponse, Http404
+from django.http import FileResponse
 import os
-import io
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -141,3 +141,34 @@ def download_file(request):
         return Response({"error": str(fnf_error)}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+    
+
+@api_view(["POST"])
+@parser_classes([MultiPartParser, FormParser])  # Handle form data with file uploads
+def verify_signature(request):
+    """
+    Accepts an image and a reference number,
+    calls the Gradio API via frogery_test, and returns the result.
+    """
+    try:
+        image_file = request.FILES.get('image')
+        reference_number = request.data.get('reference_number')
+
+        if not image_file or not reference_number:
+            return Response({'error': 'Image and reference_number are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            reference_number = int(reference_number)
+        except ValueError:
+            return Response({'error': 'reference_number must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Call the function
+        result = frogery_test(image_file, reference_number)
+        # print("Raw API result:", result)
+        parsed_result = parse_signature_result(result)
+        # print("Parsed result: ", parsed_result)
+        return Response(parsed_result, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error in verify_signature: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
