@@ -4,7 +4,6 @@ from .config import MEAN_STD, MIN_MAX, ONE_HOT_COLUMNS, LABEL_ENCODINGS
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from gradio_client import Client, handle_file
-import requests
 import tempfile
 import re
 import os

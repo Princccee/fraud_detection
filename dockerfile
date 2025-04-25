@@ -1,17 +1,27 @@
 # Use an official Python image as base
-FROM python:3.11
+FROM python:3.11-slim
 
-# Set the working directory inside the container
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Set the working directory
 WORKDIR /app
 
-# Copy project files into the container
+# Install system dependencies
+RUN apt-get update && apt-get install -y build-essential libpq-dev
+
+# Copy requirement file first to leverage Docker layer caching
+COPY requirements.txt /app/
+
+# Install Python dependencies
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the project
 COPY . /app
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Expose Django port
+EXPOSE 8000
 
-# Expose ports (Django default: 8000, Streamlit default: 8501)
-EXPOSE 8000 8501
-
-# Run Django migrations and start the server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# Default command: run Gunicorn server
+CMD ["gunicorn", "fraud_detection.wsgi:application", "--bind", "0.0.0.0:8000"]
