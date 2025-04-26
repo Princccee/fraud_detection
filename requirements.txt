@@ -63,7 +63,7 @@ matplotlib==3.10.1
 mdurl==0.1.2
 ml-dtypes==0.4.1
 msgpack==1.1.0
-mysqlclient==2.2.7
+# mysqlclient==2.2.7
 namex==0.0.8
 narwhals==1.27.1
 numpy==2.0.2
