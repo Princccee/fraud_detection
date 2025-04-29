@@ -158,7 +158,7 @@ def frogery_test(image_file, reference_number):
 
     try:
         # Initialize Gradio Client
-        client = Client("786avinash/signatureapi")
+        client = Client("Abhij12/signauth")
 
         # Call Gradio API with the uploaded image and reference number
         result = client.predict(
